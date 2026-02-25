@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AdminUser {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  passwordHash String   @map("password_hash")
+  photoUrl     String?  @default("/images/profile.jpg") @map("photo_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("admin_users")
+}
+
+model HomeContent {
+  id          Int      @id @default(autoincrement())
+  greeting    String   @default("Halo, saya")
+  name        String   @default("Taji Jadda Giras Sentosa")
+  description String
+  cvUrl       String   @default("") @map("cv_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("home_content")
+}
+
+model HomeStat {
+  id           Int      @id @default(autoincrement())
+  statKey      String   @unique @map("stat_key")
+  statValue    String   @map("stat_value")
+  statLabel    String   @map("stat_label")
+  icon         String?
+  gradientFrom String   @map("gradient_from")
+  gradientTo   String   @map("gradient_to")
+  displayOrder Int?     @default(0) @map("display_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("home_stats")
+}
+
+model ProfileCard {
+  id            Int      @id @default(autoincrement())
+  handle        String
+  status        String
+  avatarUrl     String   @map("avatar_url")
+  miniAvatarUrl String   @map("mini_avatar_url")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("profile_card")
+}
+
+model AboutContent {
+  id                 Int      @id @default(autoincrement())
+  whoAmITitle        String   @default("Who am I") @map("who_am_i_title")
+  whoAmIContent      String   @map("who_am_i_content")
+  myApproachTitle    String   @default("My Approach") @map("my_approach_title")
+  myApproachContent  String   @map("my_approach_content")
+  lanyardCardFile    String   @default("card.glb") @map("lanyard_card_file")
+  lanyardTextureFile String   @default("lanyard.png") @map("lanyard_texture_file")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("about_content")
+}
+
+model Skill {
+  id            Int      @id @default(autoincrement())
+  skillName     String   @map("skill_name")
+  skillCategory String   @map("skill_category")
+  skillIcon     String   @map("skill_icon")
+  gradientFrom  String   @map("gradient_from")
+  gradientTo    String   @map("gradient_to")
+  borderColor   String   @map("border_color")
+  displayOrder  Int?     @default(0) @map("display_order")
+  isActive      Boolean? @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("skills")
+}
+
+model Project {
+  id                 Int      @id @default(autoincrement())
+  projectTitle       String   @map("project_title")
+  projectSubtitle    String   @map("project_subtitle")
+  projectHandle      String?  @unique @map("project_handle")
+  projectLocation    String?  @map("project_location")
+  projectImageUrl    String   @map("project_image_url")
+  projectUrl         String?  @map("project_url")
+  demoUrl            String?  @map("demo_url")
+  projectDescription String?  @map("project_description")
+  borderColor        String   @default("#3B82F6") @map("border_color")
+  gradient           String   @default("linear-gradient(145deg, #3B82F6, #000)")
+  displayOrder       Int?     @default(0) @map("display_order")
+  isActive           Boolean? @default(true) @map("is_active")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at")
+  category           String?
+  techStack          String[] @map("tech_stack")
+  galleryImages      Json?    @map("gallery_images")
+  features           Json?
+  aboutTitle         String?  @map("about_title")
+  detailsTitle       String?  @map("details_title")
+  featuresTitle      String?  @map("features_title")
+  galleryTitle       String?  @map("gallery_title")
+  demoType           String?  @default("URL") @map("demo_type")
+
+  @@map("projects")
+}

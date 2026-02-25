@@ -1,0 +1,452 @@
+'use client';
+
+import React, { useEffect, useRef, useCallback, useMemo, useState } from 'react';
+import Image from 'next/image';
+import './ProfileCard.css';
+
+const DEFAULT_INNER_GRADIENT = 'linear-gradient(145deg,#60496e8c 0%,#71C4FF44 100%)';
+
+const ANIMATION_CONFIG = {
+    INITIAL_DURATION: 1200,
+    INITIAL_X_OFFSET: 70,
+    INITIAL_Y_OFFSET: 60,
+    DEVICE_BETA_OFFSET: 20,
+    ENTER_TRANSITION_MS: 180
+};
+
+const clamp = (v: number, min = 0, max = 100) => Math.min(Math.max(v, min), max);
+const round = (v: number, precision = 3) => parseFloat(v.toFixed(precision));
+const adjust = (v: number, fMin: number, fMax: number, tMin: number, tMax: number) => round(tMin + ((tMax - tMin) * (v - fMin)) / (fMax - fMin));
+
+interface ProfileCardProps {
+    avatarUrl?: string;
+    iconUrl?: string;
+    grainUrl?: string;
+    innerGradient?: string;
+    behindGlowEnabled?: boolean;
+    behindGlowColor?: string;
+    behindGlowSize?: string;
+    className?: string;
+    enableTilt?: boolean;
+    enableMobileTilt?: boolean;
+    mobileTiltSensitivity?: number;
+    miniAvatarUrl?: string;
+    handle?: string;
+    status?: string;
+    contactText?: string;
+    showUserInfo?: boolean;
+    onContactClick?: () => void;
+}
+
+const ProfileCardComponent: React.FC<ProfileCardProps> = ({
+    avatarUrl = '/images/profile.jpg',
+    iconUrl,
+    grainUrl,
+    innerGradient,
+    behindGlowEnabled = true,
+    behindGlowColor,
+    behindGlowSize,
+    className = '',
+    enableTilt = true,
+    enableMobileTilt = false,
+    mobileTiltSensitivity = 5,
+    miniAvatarUrl,
+    handle = 'javicodes',
+    status = 'Online',
+    contactText = 'Contact',
+    showUserInfo = true,
+    onContactClick
+}) => {
+    const wrapRef = useRef<HTMLDivElement>(null);
+    const shellRef = useRef<HTMLDivElement>(null);
+
+    const enterTimerRef = useRef<number | null>(null);
+    const leaveRafRef = useRef<number | null>(null);
+
+    // Track visibility
+    const [inView, setInView] = useState(true);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                setInView(entry.isIntersecting);
+            },
+            { threshold: 0.1 }
+        );
+
+        if (wrapRef.current) {
+            observer.observe(wrapRef.current);
+        }
+
+        return () => {
+            observer.disconnect();
+        };
+    }, []);
+
+    const tiltEngine = useMemo(() => {
+        if (!enableTilt) return null;
+
+        let rafId: number | null = null;
+        let running = false;
+        let lastTs = 0;
+
+        let currentX = 0;
+        let currentY = 0;
+        let targetX = 0;
+        let targetY = 0;
+
+        const DEFAULT_TAU = 0.14;
+        const INITIAL_TAU = 0.6;
+        let initialUntil = 0;
+
+        const setTiltVars = (x: number, y: number) => {
+            const shell = shellRef.current;
+            const wrap = wrapRef.current;
+            if (!shell || !wrap) return;
+
+            const width = shell.clientWidth || 1;
+            const height = shell.clientHeight || 1;
+
+            // Tilt still needs clamping to keep rotation sane
+            const percentX = clamp((100 / width) * x);
+            const percentY = clamp((100 / height) * y);
+
+            const centerX = percentX - 50;
+            const centerY = percentY - 50;
+
+            const properties: Record<string, string> = {
+                '--background-x': `${adjust(percentX, 0, 100, 35, 65)}%`,
+                '--background-y': `${adjust(percentY, 0, 100, 35, 65)}%`,
+                '--pointer-from-center': `${clamp(Math.hypot(percentY - 50, percentX - 50) / 50, 0, 1)}`,
+                '--pointer-from-top': `${percentY / 100}`,
+                '--pointer-from-left': `${percentX / 100}`,
+                '--rotate-x': `${round(-(centerX / 5))}deg`,
+                '--rotate-y': `${round(centerY / 4)}deg`
+            };
+
+            for (const [k, v] of Object.entries(properties)) wrap.style.setProperty(k, v);
+        };
+
+        const setGlossVars = (x: number, y: number) => {
+            const shell = shellRef.current;
+            const wrap = wrapRef.current;
+            if (!shell || !wrap) return;
+
+            // NO CLAMPING for glare position - allow it to go off-edge
+            const width = shell.clientWidth || 1;
+            const height = shell.clientHeight || 1;
+
+            const percentX = (100 / width) * x;
+            const percentY = (100 / height) * y;
+
+            wrap.style.setProperty('--pointer-x', `${percentX}%`);
+            wrap.style.setProperty('--pointer-y', `${percentY}%`);
+        };
+
+        const step = (ts: number) => {
+            if (!running) return;
+            if (lastTs === 0) lastTs = ts;
+            const dt = (ts - lastTs) / 1000;
+            lastTs = ts;
+
+            const tau = ts < initialUntil ? INITIAL_TAU : DEFAULT_TAU;
+            const k = 1 - Math.exp(-dt / tau);
+
+            currentX += (targetX - currentX) * k;
+            currentY += (targetY - currentY) * k;
+
+            setTiltVars(currentX, currentY);
+
+            // Stop loop only if TILT is settled
+            const stillFar = Math.abs(targetX - currentX) > 0.05 || Math.abs(targetY - currentY) > 0.05;
+
+            if (stillFar || document.hasFocus()) {
+                rafId = requestAnimationFrame(step);
+            } else {
+                running = false;
+                lastTs = 0;
+                if (rafId) {
+                    cancelAnimationFrame(rafId);
+                    rafId = null;
+                }
+            }
+        };
+
+        const start = () => {
+            if (running) return;
+            running = true;
+            lastTs = 0;
+            rafId = requestAnimationFrame(step);
+        };
+
+        return {
+            setImmediate(x: number, y: number) {
+                // Instant update for both glare and tilt start point
+                currentX = x;
+                currentY = y;
+                setGlossVars(x, y); // Instant Glare
+                setTiltVars(x, y);  // Instant Tilt
+            },
+            updateTarget(x: number, y: number) {
+                setGlossVars(x, y); // Instant Glare Tracking (1:1)
+                targetX = x;
+                targetY = y;
+                start(); // Spring Physics for Tilt
+            },
+            toCenter() {
+                const shell = shellRef.current;
+                if (!shell) return;
+                this.updateTarget(shell.clientWidth / 2, shell.clientHeight / 2);
+            },
+            beginInitial(durationMs: number) {
+                initialUntil = performance.now() + durationMs;
+                start();
+            },
+            getCurrent() {
+                return { x: currentX, y: currentY, tx: targetX, ty: targetY };
+            },
+            cancel() {
+                if (rafId) cancelAnimationFrame(rafId);
+                rafId = null;
+                running = false;
+                lastTs = 0;
+            },
+            checkVisibilityAndStop() {
+                this.cancel();
+            },
+            resumeIfVisible() {
+                // Determine if we need to resume based on target vs current or just leave it
+                // Actually start() checks running state
+                start();
+            }
+        };
+    }, [enableTilt]);
+
+    // Effect to stop/start engine based on visibility
+    useEffect(() => {
+        if (!tiltEngine) return;
+        if (inView) {
+            tiltEngine.resumeIfVisible();
+        } else {
+            tiltEngine.checkVisibilityAndStop();
+        }
+    }, [inView, tiltEngine]);
+
+
+    const getOffsets = (evt: PointerEvent, el: HTMLElement) => {
+        const rect = el.getBoundingClientRect();
+        return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
+    };
+
+    const handlePointerMove = useCallback(
+        (event: PointerEvent) => {
+            const shell = shellRef.current;
+            if (!shell || !tiltEngine || !inView) return;
+            const { x, y } = getOffsets(event, shell);
+            tiltEngine.updateTarget(x, y);
+        },
+        [tiltEngine, inView]
+    );
+
+    const handlePointerEnter = useCallback(
+        (event: PointerEvent) => {
+            const shell = shellRef.current;
+            if (!shell || !tiltEngine || !inView) return;
+
+            shell.classList.add('active');
+            shell.classList.add('entering');
+            if (enterTimerRef.current) window.clearTimeout(enterTimerRef.current);
+            enterTimerRef.current = window.setTimeout(() => {
+                shell.classList.remove('entering');
+            }, ANIMATION_CONFIG.ENTER_TRANSITION_MS);
+
+            const { x, y } = getOffsets(event, shell);
+            tiltEngine.setImmediate(x, y); // Snap to position immediately
+            tiltEngine.updateTarget(x, y);
+        },
+        [tiltEngine, inView]
+    );
+
+    const handlePointerLeave = useCallback(() => {
+        const shell = shellRef.current;
+        if (!shell || !tiltEngine || !inView) return;
+
+        tiltEngine.toCenter();
+
+        const checkSettle = () => {
+            const { x, y, tx, ty } = tiltEngine.getCurrent();
+            const settled = Math.hypot(tx - x, ty - y) < 0.6;
+            if (settled) {
+                shell.classList.remove('active');
+                leaveRafRef.current = null;
+            } else {
+                leaveRafRef.current = requestAnimationFrame(checkSettle);
+            }
+        };
+        if (leaveRafRef.current) cancelAnimationFrame(leaveRafRef.current);
+        leaveRafRef.current = requestAnimationFrame(checkSettle);
+    }, [tiltEngine, inView]);
+
+    const handleDeviceOrientation = useCallback(
+        (event: DeviceOrientationEvent) => {
+            const shell = shellRef.current;
+            if (!shell || !tiltEngine || !inView) return;
+
+            const { beta, gamma } = event;
+            if (beta == null || gamma == null) return;
+
+            const centerX = shell.clientWidth / 2;
+            const centerY = shell.clientHeight / 2;
+            const x = clamp(centerX + gamma * mobileTiltSensitivity, 0, shell.clientWidth);
+            const y = clamp(
+                centerY + (beta - ANIMATION_CONFIG.DEVICE_BETA_OFFSET) * mobileTiltSensitivity,
+                0,
+                0
+            );
+
+            tiltEngine.updateTarget(x, y);
+        },
+        [tiltEngine, mobileTiltSensitivity, inView]
+    );
+
+    useEffect(() => {
+        if (!enableTilt || !tiltEngine) return;
+
+        const shell = shellRef.current;
+        if (!shell) return;
+
+        // Use standard event listener with passive option for better scroll performance where possible
+        // but pointer events don't have passive
+        const pointerMoveHandler = handlePointerMove as any;
+        const pointerEnterHandler = handlePointerEnter as any;
+        const pointerLeaveHandler = handlePointerLeave as any;
+        const deviceOrientationHandler = handleDeviceOrientation as any;
+
+        shell.addEventListener('pointerenter', pointerEnterHandler);
+        shell.addEventListener('pointermove', pointerMoveHandler);
+        shell.addEventListener('pointerleave', pointerLeaveHandler);
+
+        const handleClick = () => {
+            if (!enableMobileTilt || location.protocol !== 'https:') return;
+            const anyMotion = window.DeviceMotionEvent as any;
+            if (anyMotion && typeof anyMotion.requestPermission === 'function') {
+                anyMotion
+                    .requestPermission()
+                    .then((state: string) => {
+                        if (state === 'granted') {
+                            window.addEventListener('deviceorientation', deviceOrientationHandler);
+                        }
+                    })
+                    .catch(console.error);
+            } else {
+                window.addEventListener('deviceorientation', deviceOrientationHandler);
+            }
+        };
+        shell.addEventListener('click', handleClick);
+
+        const initialX = (shell.clientWidth || 0) - ANIMATION_CONFIG.INITIAL_X_OFFSET;
+        const initialY = ANIMATION_CONFIG.INITIAL_Y_OFFSET;
+        tiltEngine.setImmediate(initialX, initialY);
+        tiltEngine.toCenter();
+        tiltEngine.beginInitial(ANIMATION_CONFIG.INITIAL_DURATION);
+
+        return () => {
+            shell.removeEventListener('pointerenter', pointerEnterHandler);
+            shell.removeEventListener('pointermove', pointerMoveHandler);
+            shell.removeEventListener('pointerleave', pointerLeaveHandler);
+            shell.removeEventListener('click', handleClick);
+            window.removeEventListener('deviceorientation', deviceOrientationHandler);
+            if (enterTimerRef.current) window.clearTimeout(enterTimerRef.current);
+            if (leaveRafRef.current) cancelAnimationFrame(leaveRafRef.current);
+            tiltEngine.cancel();
+            shell.classList.remove('entering');
+        };
+    }, [
+        enableTilt,
+        enableMobileTilt,
+        tiltEngine,
+        handlePointerMove,
+        handlePointerEnter,
+        handlePointerLeave,
+        handleDeviceOrientation
+    ]);
+
+    const cardStyle = useMemo(
+        () => ({
+            '--icon': iconUrl ? `url(${iconUrl})` : 'none',
+            '--grain': grainUrl ? `url(${grainUrl})` : 'none',
+            '--inner-gradient': innerGradient ?? DEFAULT_INNER_GRADIENT,
+            '--behind-glow-color': behindGlowColor ?? 'rgba(125, 190, 255, 0.67)',
+            '--behind-glow-size': behindGlowSize ?? '50%'
+        } as React.CSSProperties),
+        [iconUrl, grainUrl, innerGradient, behindGlowColor, behindGlowSize]
+    );
+
+    const handleContactClick = useCallback(() => {
+        onContactClick?.();
+    }, [onContactClick]);
+
+    return (
+        <div ref={wrapRef} className={`pc-card-wrapper ${className}`.trim()} style={cardStyle}>
+            {behindGlowEnabled && <div className="pc-behind" />}
+            <div ref={shellRef} className="pc-card-shell">
+                <section className="pc-card">
+                    <div className="pc-inside">
+                        <div className="pc-shine" />
+                        <div className="pc-glare" />
+                        <div className="pc-content pc-avatar-content">
+                            {/* Replaced img with div+bg or keeping img but optimize if possible. 
+                                Since next/image requires width/height and this CSS might be dynamic, 
+                                let's use a simple img tag but ensure it has loading="lazy" (which it did).
+                                To really optimize, we should use next/image. 
+                            */}
+                            <div className="avatar overflow-hidden relative w-full h-full rounded-[30px] transition-transform duration-120 ease-out will-change-transform"
+                                style={{ transform: `translateX(calc(-50% + (var(--pointer-from-left) - 0.5) * 6px)) translateZ(0) scaleY(calc(1 + (var(--pointer-from-top) - 0.5) * 0.02)) scaleX(calc(1 + (var(--pointer-from-left) - 0.5) * 0.01))` }}>
+                                <Image
+                                    className="object-cover"
+                                    src={avatarUrl}
+                                    alt="User avatar"
+                                    fill
+                                    sizes="(max-width: 768px) 100vw, 360px"
+                                    loading="lazy"
+                                />
+                            </div>
+                            {showUserInfo && (
+                                <div className="pc-user-info">
+                                    <div className="pc-user-details">
+                                        <div className="pc-mini-avatar relative overflow-hidden">
+                                            <Image
+                                                src={miniAvatarUrl || avatarUrl}
+                                                alt="User mini avatar"
+                                                fill
+                                                sizes="48px"
+                                                className="object-cover"
+                                                loading="lazy"
+                                            />
+                                        </div>
+                                        <div className="pc-user-text font-serif italic">
+                                            <div className="pc-handle text-white">@{handle}</div>
+                                            <div className="pc-status">{status}</div>
+                                        </div>
+                                    </div>
+                                    <button
+                                        className="pc-contact-btn font-serif italic"
+                                        onClick={handleContactClick}
+                                        style={{ pointerEvents: 'auto' }}
+                                        type="button"
+                                        aria-label="Contact user"
+                                    >
+                                        {contactText}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    );
+};
+
+const ProfileCard = React.memo(ProfileCardComponent);
+export default ProfileCard;
