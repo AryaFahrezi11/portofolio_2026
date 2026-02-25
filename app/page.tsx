@@ -81,9 +81,6 @@ interface PortfolioData {
     }[];
 }
 
-// Removed in-memory cache to ensure fresh data
-// let cachedPortfolioData: PortfolioData | null = null;
-
 export default function Home() {
     const router = useRouter();
     const [portfolioData, setPortfolioData] = useState<PortfolioData | null>(null);
@@ -136,9 +133,19 @@ export default function Home() {
 
     useEffect(() => {
         async function fetchData() {
-            // Always fetch fresh data
             try {
-                const res = await fetch('/api/portfolio-data', { cache: 'no-store' });
+                // TRIK CACHE BUSTER UNTUK VERCEL (Menambahkan timestamp agar tidak 304 Not Modified)
+                const cacheBusterUrl = `/api/portfolio-data?t=${new Date().getTime()}`;
+                
+                const res = await fetch(cacheBusterUrl, { 
+                    cache: 'no-store',
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
+
                 if (!res.ok) throw new Error('Failed to fetch data');
                 const data = await res.json();
                 setPortfolioData(data);
