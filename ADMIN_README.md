@@ -388,9 +388,9 @@ This is a personal portfolio project, but feel free to:
 
 ## 📧 **Contact & Support**
 
-**Developer:** Taji Jadda Giras Sentosa  
-**Email:** tajijaddagirassntosa@gmail.com  
-**GitHub:** [girassentosa](https://github.com/girassentosa)
+**Developer:** Arya Fahrezi Amarully  
+**Email:** aryamaroely86@gmail.com  
+**GitHub:** [AryaFahrezi11](https://github.com/AryaFahrezi11)
 
 ---
 
@@ -413,7 +413,7 @@ This project is for personal use. Feel free to learn from it and adapt for your 
 
 ---
 
-**Made with ❤️ by Taji Jadda Giras Sentosa**
+**Made with ❤️ by Arya Fahrezi Amarully**
 
 **Admin Dashboard:** `http://localhost:3000/admin/login`  
 **Main Portfolio:** `http://localhost:3000`

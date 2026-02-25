@@ -105,9 +105,9 @@ const CVDownloadModal = ({ isOpen, onClose, cvUrl }: CVDownloadModalProps) => {
                                         <>
                                             <a
                                                 href={cvUrl}
-                                                download={`CV_Taji_Jadda_Giras_Sentosa${cvUrl.toLowerCase().endsWith('.pdf') ? '.pdf' : '.jpg'}`}
+                                                download={`CV_Arya_Fahrezi${cvUrl.toLowerCase().endsWith('.pdf') ? '.pdf' : '.jpg'}`}
                                                 className="w-full relative group overflow-hidden rounded-xl p-[1px] focus:outline-none block"
-                                                onClick={(e) => handleDownload(e, cvUrl, `CV_Taji_Jadda_Giras_Sentosa${cvUrl.toLowerCase().endsWith('.pdf') ? '.pdf' : '.jpg'}`)}
+                                                onClick={(e) => handleDownload(e, cvUrl, `CV_Arya_Fahrezi${cvUrl.toLowerCase().endsWith('.pdf') ? '.pdf' : '.jpg'}`)}
                                             >
                                                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-600 transition-all duration-300 group-hover:scale-105"></div>
                                                 <div className="relative bg-[#0f0f0f] hover:bg-black/80 text-white rounded-[11px] px-6 py-3.5 transition-colors flex items-center justify-center gap-2 font-medium">

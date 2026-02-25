@@ -2,7 +2,7 @@
 -- PORTFOLIO CMS DATABASE SCHEMA
 -- Database: PostgreSQL (Supabase)
 -- Version: 1.0.0
--- Author: Taji Jadda Giras Sentosa
+-- Author: Arya Fahrezi Amarully
 -- =====================================================
 
 -- =====================================================
@@ -48,7 +48,7 @@ COMMENT ON COLUMN admin_users.photo_url IS 'URL foto profile admin';
 CREATE TABLE home_content (
   id SERIAL PRIMARY KEY,
   greeting TEXT NOT NULL DEFAULT 'Halo, saya',
-  name TEXT NOT NULL DEFAULT 'Taji Jadda Giras Sentosa',
+  name TEXT NOT NULL DEFAULT 'Arya Fahrezi Amarully',
   description TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -323,7 +323,7 @@ INSERT INTO admin_users (username, password_hash, photo_url) VALUES
 
 INSERT INTO home_content (greeting, name, description) VALUES (
   'Halo, saya',
-  'Taji Jadda Giras Sentosa',
+  'Arya Fahrezi Amarully',
   'Berpengalaman dalam pengembangan web dan IoT, saya terbiasa merancang solusi yang responsif, cepat, dan sesuai kebutuhan pengguna. Menguasai JavaScript sebagai bahasa utama untuk membangun aplikasi modern dan interaktif.'
 );
 
@@ -334,7 +334,7 @@ INSERT INTO home_stats (stat_key, stat_value, stat_label, icon, gradient_from, g
   ('gpa', '3.68', 'IPK / 4.00', '🎓', '#10b981', '#06b6d4', 4);
 
 INSERT INTO profile_card (handle, status, avatar_url, mini_avatar_url) VALUES (
-  'tajijaddagiras_',
+  'aryafahrezia_',
   'Online',
   '/images/profile.jpg',
   '/images/profile.jpg'

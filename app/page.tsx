@@ -115,13 +115,13 @@ export default function Home() {
         }
 
         if (formData.sendVia === 'whatsapp') {
-            const phoneNumber = '6281265098103'; // Updated number
+            const phoneNumber = '6285226498182'; // Updated number
             const text = `Name: ${formData.name}%0AEmail: ${formData.email}%0ASubject: ${formData.subject}%0A%0A${formData.message}`;
             window.open(`https://wa.me/${phoneNumber}?text=${text}`, '_blank');
         } else {
             const subject = `${formData.subject} - ${formData.name}`;
             const body = `Name: ${formData.name}%0AEmail: ${formData.email}%0A%0A${formData.message}`;
-            window.open(`mailto:tajijaddagirassntosa@gmail.com?subject=${subject}&body=${body}`);
+            window.open(`mailto:aryamaroely86@gmail.com?subject=${subject}&body=${body}`);
         }
 
         // Auto-clear form after submission
@@ -273,7 +273,7 @@ export default function Home() {
                                     <div className="flex items-center gap-2 sm:gap-3">
                                         {/* GitHub */}
                                         <a
-                                            href="https://github.com/girassentosa"
+                                            href="https://github.com/AryaFahrezi11"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-cyan-500/20 border border-white/10 hover:border-cyan-500/50 transition-all duration-300 hover:scale-110"
@@ -284,7 +284,7 @@ export default function Home() {
                                         </a>
                                         {/* LinkedIn */}
                                         <a
-                                            href="https://www.linkedin.com/in/taji-jadda-giras-sentosa-b56601389?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app"
+                                            href="https://www.linkedin.com/in/arya-fahrezi-7a1268291?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-blue-600/20 border border-white/10 hover:border-blue-500/50 transition-all duration-300 hover:scale-110"
@@ -420,7 +420,7 @@ export default function Home() {
                                         <Lanyard
                                             position={[0, 0, 20]}
                                             gravity={[0, -40, 0]}
-                                            cardFile={portfolioData.aboutContent?.lanyard_card_file}
+                                            cardTextureFile={portfolioData.aboutContent?.lanyard_card_file}
                                             textureFile={portfolioData.aboutContent?.lanyard_texture_file}
                                         />
                                     </div>
@@ -730,7 +730,7 @@ export default function Home() {
                                     <div className="flex items-center gap-3">
                                         <div>
                                             <h3 className="text-lg sm:text-xl font-bold italic tracking-tight bg-gradient-to-r from-white via-white to-white/70 bg-clip-text text-transparent">
-                                                Taji Jadda Giras Sentosa
+                                                Arya Fahrezi Amarully
                                             </h3>
                                             <p className="text-[10px] sm:text-xs text-white/40 mt-0.5">Web & IoT Developer</p>
                                         </div>
@@ -790,17 +790,17 @@ export default function Home() {
                                 <ul className="space-y-3 sm:space-y-3.5 font-serif italic text-white/60">
                                     <li>
                                         <a
-                                            href="mailto:tajijaddagirassntosa@gmail.com"
+                                            href="mailto:aryamaroely86@gmail.com"
                                             className="group flex items-start gap-2 text-xs sm:text-sm hover:text-white/90 transition-colors duration-300"
                                         >
                                             <span className="mt-0.5 text-cyan-500 group-hover:scale-110 transition-transform duration-300">📧</span>
-                                            <span className="break-all">tajijaddagirassntosa@gmail.com</span>
+                                            <span className="break-all">aryamaroely86@gmail.com</span>
                                         </a>
                                     </li>
                                     <li>
                                         <div className="group flex items-start gap-2 text-xs sm:text-sm">
                                             <span className="mt-0.5 text-cyan-500 group-hover:scale-110 transition-transform duration-300">📍</span>
-                                            <span>Langkat, Sumatra Utara, Indonesia</span>
+                                            <span>Tegal, Jawa Tengah, Indonesia</span>
                                         </div>
                                     </li>
                                     <li>
@@ -817,7 +817,7 @@ export default function Home() {
                         {/* Copyright */}
                         <div className="text-center border-t border-white/5 pt-6 sm:pt-8 flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-0">
                             <p className="text-[10px] sm:text-xs text-white/40">
-                                &copy; {new Date().getFullYear()} <span className="font-bold italic bg-gradient-to-r from-white via-white to-white/70 bg-clip-text text-transparent">Taji Jadda Giras Sentosa</span>. All rights reserved.
+                                &copy; {new Date().getFullYear()} <span className="font-bold italic bg-gradient-to-r from-white via-white to-white/70 bg-clip-text text-transparent">Arya Fahrezi Amarully</span>. All rights reserved.
                             </p>
                         </div>
                     </div>

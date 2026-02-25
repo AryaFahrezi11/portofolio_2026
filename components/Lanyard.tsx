@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import React from 'react';
 import { Canvas, extend, useFrame } from '@react-three/fiber';
-import { useGLTF, useTexture, Environment, Lightformer } from '@react-three/drei';
+import { useTexture, Environment, Lightformer } from '@react-three/drei';
 import { BallCollider, CuboidCollider, Physics, RigidBody, useRopeJoint, useSphericalJoint } from '@react-three/rapier';
 import { MeshLineGeometry, MeshLineMaterial } from 'meshline';
 import * as THREE from 'three';
@@ -15,58 +15,35 @@ interface LanyardProps {
     gravity?: number[];
     fov?: number;
     transparent?: boolean;
-    cardFile?: string;
-    textureFile?: string;
+    textureFile?: string; // Tali
+    cardTextureFile?: string; // Foto Kartu
 }
-
-interface BandProps {
-    maxSpeed?: number;
-    minSpeed?: number;
-    isMobile?: boolean;
-    cardGLB: string;
-    lanyardTexture: string;
-    inView?: boolean;
-}
-
 
 export default function Lanyard({
-    position = [0, 0, 30],
+    position = [0, 0, 20],
     gravity = [0, -40, 0],
-    fov = 20,
+    fov = 25,
     transparent = true,
-    cardFile = 'card.glb',
-    textureFile = 'lanyard.png'
+    textureFile = 'lanyard.png',
+    cardTextureFile = 'id-card.png'
 }: LanyardProps) {
-    // Build full paths from filenames - detect if value is already a full URL
-    const isCardFullUrl = cardFile.startsWith('http');
-    const isTextureFullUrl = textureFile.startsWith('http');
-
-    const cardGLB = isCardFullUrl ? cardFile : `/assets/lanyard/${cardFile}`;
-    const lanyardTexture = isTextureFullUrl ? textureFile : `/assets/lanyard/${textureFile}`;
-
-    // Preload assets to prevent pop-in (only preload local files)
-    if (!isCardFullUrl) useGLTF.preload(cardGLB);
-    if (!isTextureFullUrl) useTexture.preload(lanyardTexture);
+    const lanyardTexturePath = `/assets/lanyard/${textureFile}`;
+    const cardTexturePath = `/assets/lanyard/${cardTextureFile}`;
 
     const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
-    const [inView, setInView] = useState(false); // Start false, let observer control
+    const [inView, setInView] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
         window.addEventListener('resize', handleResize);
 
-        // Intersection Observer - render Canvas only when in view
         const observer = new IntersectionObserver(
-            ([entry]) => {
-                setInView(entry.isIntersecting);
-            },
-            { threshold: 0.2, rootMargin: '300px' } // Load earlier for smoother entry
+            ([entry]) => setInView(entry.isIntersecting),
+            { threshold: 0.1 }
         );
 
-        if (containerRef.current) {
-            observer.observe(containerRef.current);
-        }
+        if (containerRef.current) observer.observe(containerRef.current);
 
         return () => {
             window.removeEventListener('resize', handleResize);
@@ -75,34 +52,29 @@ export default function Lanyard({
     }, []);
 
     return (
-        <div ref={containerRef} className="relative z-0 w-full h-full flex justify-center items-end md:items-center transform scale-100 origin-center will-change-transform">
+        <div ref={containerRef} className="relative z-0 w-full h-full flex justify-center items-center overflow-hidden">
             {inView && (
                 <Canvas
                     camera={{ position: position as [number, number, number], fov: fov }}
-                    dpr={isMobile ? [1, 1.2] : [1, 2]} // Reduced DPR for mobile fluidity
-                    gl={{ alpha: transparent, powerPreference: "high-performance", antialias: !isMobile }}
-                    onCreated={({ gl }) => {
-                        gl.setClearColor(new THREE.Color(0x000000), transparent ? 0 : 1);
-                    }}
-                    frameloop="demand" // Change to demand, only render when something moves
+                    dpr={[1, 1.5]}
+                    gl={{ alpha: transparent, powerPreference: "low-power", antialias: false }}
                 >
-                    <ambientLight intensity={Math.PI} />
-                    <Physics gravity={gravity as [number, number, number]} timeStep={isMobile ? 1 / 30 : 1 / 60}>
-                        <Band isMobile={isMobile} cardGLB={cardGLB} lanyardTexture={lanyardTexture} inView={inView} />
+                    <ambientLight intensity={2} />
+                    <Physics gravity={gravity as [number, number, number]}>
+                        <Band
+                            isMobile={isMobile}
+                            lanyardTexture={lanyardTexturePath}
+                            cardTexturePath={cardTexturePath}
+                        />
                     </Physics>
-                    <Environment blur={0.75}>
-                        <Lightformer intensity={2} color="white" position={[0, -1, 5]} rotation={[0, 0, Math.PI / 3]} scale={[100, 0.1, 1]} />
-                        <Lightformer intensity={3} color="white" position={[-1, -1, 1]} rotation={[0, 0, Math.PI / 3]} scale={[100, 0.1, 1]} />
-                        <Lightformer intensity={3} color="white" position={[1, 1, 1]} rotation={[0, 0, Math.PI / 3]} scale={[100, 0.1, 1]} />
-                        <Lightformer intensity={10} color="white" position={[-10, 0, 14]} rotation={[0, Math.PI / 2, Math.PI / 3]} scale={[100, 10, 1]} />
-                    </Environment>
+                    <Environment preset="city" />
                 </Canvas>
             )}
         </div>
     );
 }
 
-function Band({ maxSpeed = 50, minSpeed = 0, isMobile = false, cardGLB, lanyardTexture, inView = true }: BandProps) {
+function Band({ isMobile, lanyardTexture, cardTexturePath }: { isMobile: boolean, lanyardTexture: string, cardTexturePath: string }) {
     const band = useRef<THREE.Mesh>(null);
     const fixed = useRef<any>(null);
     const j1 = useRef<any>(null);
@@ -115,29 +87,20 @@ function Band({ maxSpeed = 50, minSpeed = 0, isMobile = false, cardGLB, lanyardT
     const rot = new THREE.Vector3();
     const dir = new THREE.Vector3();
 
-    const segmentProps = { type: 'dynamic' as const, canSleep: true, colliders: false as const, angularDamping: 4, linearDamping: 4 };
-    const { nodes, materials } = useGLTF(cardGLB) as any;
     const texture = useTexture(lanyardTexture);
-    const [curve] = useState(
-        () =>
-            new THREE.CatmullRomCurve3([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()])
-    );
+    const cardTexture = useTexture(cardTexturePath);
+
+    const [curve] = useState(() => new THREE.CatmullRomCurve3([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()]));
     const [dragged, drag] = useState<THREE.Vector3 | boolean>(false);
     const [hovered, hover] = useState(false);
 
     useRopeJoint(fixed, j1, [[0, 0, 0], [0, 0, 0], 0.3]);
     useRopeJoint(j1, j2, [[0, 0, 0], [0, 0, 0], 0.3]);
     useRopeJoint(j2, j3, [[0, 0, 0], [0, 0, 0], 0.3]);
-    useSphericalJoint(j3, card, [
-        [0, 0, 0],
-        [0, 4.3, 0]
-    ]);
+    useSphericalJoint(j3, card, [[0, 0, 0], [0, 2.5, 0]]);
 
     useEffect(() => {
-        if (hovered) {
-            document.body.style.cursor = dragged ? 'grabbing' : 'grab';
-            return () => { document.body.style.cursor = 'auto'; };
-        }
+        document.body.style.cursor = hovered ? (dragged ? 'grabbing' : 'grab') : 'auto';
     }, [hovered, dragged]);
 
     useFrame((state, delta) => {
@@ -146,25 +109,20 @@ function Band({ maxSpeed = 50, minSpeed = 0, isMobile = false, cardGLB, lanyardT
             dir.copy(vec).sub(state.camera.position).normalize();
             vec.add(dir.multiplyScalar(state.camera.position.length()));
             [card, j1, j2, j3, fixed].forEach(ref => ref.current?.wakeUp());
-            // Remove clamp limits - allow unlimited drag in all directions
             card.current?.setNextKinematicTranslation({ x: vec.x - dragged.x, y: vec.y - dragged.y, z: vec.z - dragged.z });
         }
+
         if (fixed.current) {
-            [j1, j2].forEach(ref => {
+            [j1, j2, j3].forEach(ref => {
                 if (!ref.current.lerped) ref.current.lerped = new THREE.Vector3().copy(ref.current.translation());
-                const clampedDistance = Math.max(0.1, Math.min(1, ref.current.lerped.distanceTo(ref.current.translation())));
-                ref.current.lerped.lerp(
-                    ref.current.translation(),
-                    delta * (minSpeed + clampedDistance * (maxSpeed - minSpeed))
-                );
+                ref.current.lerped.lerp(ref.current.translation(), delta * 20);
             });
             curve.points[0].copy(j3.current.translation());
             curve.points[1].copy(j2.current.lerped);
             curve.points[2].copy(j1.current.lerped);
             curve.points[3].copy(fixed.current.translation());
 
-            if (band.current && (band.current.geometry as any).setPoints) {
-                // @ts-ignore
+            if (band.current) {
                 (band.current.geometry as any).setPoints(curve.getPoints(isMobile ? 16 : 32));
             }
 
@@ -174,50 +132,46 @@ function Band({ maxSpeed = 50, minSpeed = 0, isMobile = false, cardGLB, lanyardT
         }
     });
 
-    curve.curveType = 'chordal';
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
 
     return (
         <>
             <group position={[0, 4, 0]}>
-                <RigidBody ref={fixed} {...segmentProps} type="fixed" />
-                <RigidBody position={[0.3, 0, 0]} ref={j1} {...segmentProps}>
+                <RigidBody ref={fixed} type="fixed" />
+                <RigidBody position={[0.3, 0, 0]} ref={j1} linearDamping={2} angularDamping={2}>
                     <BallCollider args={[0.1]} />
                 </RigidBody>
-                <RigidBody position={[0.6, 0, 0]} ref={j2} {...segmentProps}>
+                <RigidBody position={[0.6, 0, 0]} ref={j2} linearDamping={2} angularDamping={2}>
                     <BallCollider args={[0.1]} />
                 </RigidBody>
-                <RigidBody position={[0.9, 0, 0]} ref={j3} {...segmentProps}>
+                <RigidBody position={[0.9, 0, 0]} ref={j3} linearDamping={2} angularDamping={2}>
                     <BallCollider args={[0.1]} />
                 </RigidBody>
-                <RigidBody position={[1.2, 0, 0]} ref={card} {...segmentProps} type={dragged ? 'kinematicPosition' : 'dynamic'}>
-                    <CuboidCollider args={[1.8, 2.53125, 0.01]} />
+                <RigidBody
+                    position={[1.2, 0, 0]}
+                    ref={card}
+                    type={dragged ? 'kinematicPosition' : 'dynamic'}
+                    linearDamping={2}
+                    angularDamping={2}
+                >
+                    <CuboidCollider args={[1.5, 2.2, 0.05]} />
                     <group
-                        scale={4.5}
-                        position={[0, -1.2, -0.05]}
+                        scale={1}
                         onPointerOver={() => hover(true)}
                         onPointerOut={() => hover(false)}
-                        onPointerUp={(e: any) => {
-                            e.target.releasePointerCapture(e.pointerId);
-                            drag(false);
-                        }}
-                        onPointerDown={(e: any) => {
-                            e.target.setPointerCapture(e.pointerId);
-                            drag(new THREE.Vector3().copy(e.point).sub(vec.copy(card.current.translation())));
-                        }}
+                        onPointerUp={(e: any) => { e.target.releasePointerCapture(e.pointerId); drag(false); }}
+                        onPointerDown={(e: any) => { e.target.setPointerCapture(e.pointerId); drag(new THREE.Vector3().copy(e.point).sub(vec.copy(card.current.translation()))); }}
                     >
-                        <mesh geometry={nodes.card.geometry}>
-                            <meshPhysicalMaterial
-                                map={materials.base.map}
-                                map-anisotropy={16}
-                                clearcoat={isMobile ? 0 : 1}
-                                clearcoatRoughness={0.15}
-                                roughness={0.9}
-                                metalness={0.8}
-                            />
+                        {/* Tampak Depan */}
+                        <mesh>
+                            <planeGeometry args={[3, 4.5]} />
+                            <meshBasicMaterial map={cardTexture} side={THREE.FrontSide} transparent />
                         </mesh>
-                        <mesh geometry={nodes.clip.geometry} material={materials.metal} material-roughness={0.3} />
-                        <mesh geometry={nodes.clamp.geometry} material={materials.metal} />
+                        {/* Tampak Belakang */}
+                        <mesh rotation={[0, Math.PI, 0]}>
+                            <planeGeometry args={[3, 4.5]} />
+                            <meshBasicMaterial color="#222" side={THREE.FrontSide} />
+                        </mesh>
                     </group>
                 </RigidBody>
             </group>
@@ -226,13 +180,12 @@ function Band({ maxSpeed = 50, minSpeed = 0, isMobile = false, cardGLB, lanyardT
                 <meshLineGeometry />
                 {/* @ts-ignore */}
                 <meshLineMaterial
+                    transparent
                     color="white"
-                    depthTest={false}
-                    resolution={isMobile ? [1000, 2000] : [1000, 1000]}
                     useMap
                     map={texture}
+                    lineWidth={1}
                     repeat={[-4, 1]}
-                    lineWidth={2}
                 />
             </mesh>
         </>

@@ -31,8 +31,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <title>Taji Jadda Giras Sentosa - Web & IoT Developer Portfolio</title>
-        <meta name="description" content="Portfolio website Taji Jadda Giras Sentosa - Software Engineer dengan 2+ tahun pengalaman dalam Web Development dan IoT. Spesialisasi JavaScript, React, Next.js, Node.js, dan Arduino." />
+        <title>Arya Fahrezi Amarully - Web & IoT Developer Portfolio</title>
+        <meta name="description" content="Portfolio website Arya Fahrezi Amarully - Software Engineer dengan 2+ tahun pengalaman dalam Web Development dan IoT. Spesialisasi JavaScript, React, Next.js, Node.js, dan Arduino." />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <meta name="theme-color" content="#000000" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />

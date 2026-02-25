@@ -12,19 +12,28 @@ export async function uploadToCloudinary(file: File, folder: string): Promise<st
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
+    // Deteksi tipe file untuk menentukan akses (optional tapi membantu)
+    const isPDF = file.type === 'application/pdf';
+
     return new Promise((resolve, reject) => {
-        cloudinary.uploader.upload_stream(
+        const uploadStream = cloudinary.uploader.upload_stream(
             {
                 folder: folder,
-                resource_type: 'auto',
+                resource_type: 'auto', // Cloudinary akan menentukan ini image atau raw
+                // Tambahkan flags agar PDF diperlakukan dengan benar
+                flags: isPDF ? "attachment" : undefined, 
+                access_mode: 'public'
             },
             (error, result) => {
                 if (error || !result) {
                     console.error('Cloudinary Upload Error:', error);
                     return reject(error);
                 }
+                // Paksa secure_url (HTTPS) agar tidak diblokir browser
                 resolve(result.secure_url);
             }
-        ).end(buffer);
+        );
+
+        uploadStream.end(buffer);
     });
 }

@@ -22,7 +22,7 @@ model AdminUser {
 model HomeContent {
   id          Int      @id @default(autoincrement())
   greeting    String   @default("Halo, saya")
-  name        String   @default("Taji Jadda Giras Sentosa")
+  name        String   @default("Arya Fahrezi Amarully")
   description String
   cvUrl       String   @default("") @map("cv_url")
   createdAt   DateTime @default(now()) @map("created_at")
