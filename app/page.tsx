@@ -360,7 +360,7 @@ export default function Home() {
                                             <div className="relative w-[200px] sm:w-[250px] aspect-[2.5/4] rounded-xl overflow-hidden shadow-2xl shadow-cyan-500/20 border border-white/10 group animate-fade-in">
                                                 <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/20 to-purple-600/20 z-10 group-hover:opacity-0 transition-opacity duration-500"></div>
                                                 <img 
-                                                    src={portfolioData?.aboutContent?.lanyard_card_file ? `/assets/lanyard/${portfolioData.aboutContent.lanyard_card_file}` : '/assets/lanyard/id-card-photo.png'}
+                                                    src={portfolioData?.aboutContent?.lanyard_card_file ? `/assets/lanyard/${portfolioData.aboutContent.lanyard_card_file}` : '/assets/lanyard/id-card.png'}
                                                     alt="ID Card" 
                                                     className="w-full h-full object-cover"
                                                 />
