@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, CSSProperties } from 'react';
+import React, { useState, useEffect, CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '@/components/Navbar';
@@ -11,15 +11,39 @@ import CVDownloadModal from '@/components/CVDownloadModal';
 import dynamic from 'next/dynamic';
 import FadeIn from '@/components/FadeIn';
 
+// --- TAMENG ANTI-CRASH (ERROR BOUNDARY) ---
+// Melindungi web agar tidak hancur saat WebGL/Three.js gagal dimuat di VGA spek rendah
+class Safe3D extends React.Component<{children: React.ReactNode, fallback?: React.ReactNode}, {hasError: boolean}> {
+    constructor(props: {children: React.ReactNode, fallback?: React.ReactNode}) {
+        super(props);
+        this.state = { hasError: false };
+    }
+    static getDerivedStateFromError(_: Error) {
+        return { hasError: true };
+    }
+    render() {
+        if (this.state.hasError) {
+            return this.props.fallback || (
+                <div className="w-full h-full min-h-[250px] flex items-center justify-center border border-white/10 bg-white/5 rounded-2xl p-6 text-center backdrop-blur-sm">
+                    <p className="text-white/40 text-sm font-serif italic">
+                        Animasi 3D dinonaktifkan untuk menyesuaikan performa perangkat Anda.
+                    </p>
+                </div>
+            );
+        }
+        return this.props.children;
+    }
+}
+
 // Lazy load heavy components
 const Lanyard = dynamic(() => import('@/components/Lanyard'), {
     ssr: false,
-    loading: () => <div className="w-full h-full" />
+    loading: () => <div className="w-full h-full flex items-center justify-center text-white/20 text-sm font-serif italic">Loading 3D...</div>
 });
 
 const ChromaGrid = dynamic(() => import('@/components/ChromaGrid'), {
     ssr: false,
-    loading: () => <div className="w-full h-[600px] flex items-center justify-center text-white/20">Loading Projects...</div>
+    loading: () => <div className="w-full h-[600px] flex items-center justify-center text-white/20 text-sm font-serif italic">Loading Projects...</div>
 });
 
 const GradientText = dynamic(() => import('@/components/GradientText'), { ssr: true });
@@ -236,7 +260,7 @@ export default function Home() {
                                 <FadeIn delay={0.6} direction="down">
                                     <div className="text-base sm:text-lg md:text-xl text-white/70 leading-tight">
                                         <TrueFocus
-                                            sentence={portfolioData.homeContent?.greeting || 'Halo, saya'}
+                                            sentence={portfolioData?.homeContent?.greeting || 'Halo, saya'}
                                             manualMode={false}
                                             blurAmount={5}
                                             borderColor="#06b6d4"
@@ -253,7 +277,7 @@ export default function Home() {
                                     <div className="w-full">
                                         <TextType
                                             as="h1"
-                                            text={portfolioData.homeContent?.name || 'Your Name'}
+                                            text={portfolioData?.homeContent?.name || 'Your Name'}
                                             typingSpeed={75}
                                             pauseDuration={1500}
                                             showCursor={true}
@@ -269,7 +293,7 @@ export default function Home() {
                             {/* Description - Consistent with About style */}
                             <FadeIn delay={0.8} direction="up">
                                 <p className="text-base sm:text-lg md:text-xl text-white/80 leading-relaxed text-justify font-serif italic">
-                                    {portfolioData.homeContent?.description || 'Your description here'}
+                                    {portfolioData?.homeContent?.description || 'Deskripsi belum tersedia.'}
                                 </p>
                             </FadeIn>
 
@@ -333,7 +357,7 @@ export default function Home() {
                         {/* Right Column - ProfileCard */}
                         <div className="flex justify-center lg:justify-end order-1 lg:order-2">
                             <FadeIn delay={1.2} direction="up" className="w-full lg:max-w-[340px] xl:max-w-[360px]">
-                                {portfolioData.profileCard && (
+                                {portfolioData?.profileCard && (
                                     <ProfileCard
                                         handle={portfolioData.profileCard.handle}
                                         status={portfolioData.profileCard.status}
@@ -385,7 +409,7 @@ export default function Home() {
                                                     Who am I
                                                 </h2>
                                                 <p className="text-base sm:text-lg md:text-xl text-white/80 leading-relaxed text-justify font-serif italic">
-                                                    {portfolioData?.aboutContent?.who_am_i_content || 'Content not available'}
+                                                    {portfolioData?.aboutContent?.who_am_i_content || 'Konten belum tersedia.'}
                                                 </p>
                                             </div>
 
@@ -395,14 +419,14 @@ export default function Home() {
                                                     My Approach
                                                 </h2>
                                                 <p className="text-base sm:text-lg md:text-xl text-white/80 leading-relaxed text-justify font-serif italic">
-                                                    {portfolioData?.aboutContent?.my_approach_content || 'Content not available'}
+                                                    {portfolioData?.aboutContent?.my_approach_content || 'Konten belum tersedia.'}
                                                 </p>
                                             </div>
                                         </div>
 
                                         {/* Stats Cards - Moved from Home (Outside PixelCard) */}
                                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-                                            {portfolioData.homeStats.map((stat) => (
+                                            {(portfolioData?.homeStats || []).map((stat) => (
                                                 <div
                                                     key={stat.id}
                                                     className="group bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm border border-white/10 rounded-lg p-2 sm:p-3 text-center hover:border-cyan-500/50 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-cyan-500/20"
@@ -424,12 +448,14 @@ export default function Home() {
 
                                     {/* Right Column - 3D Lanyard */}
                                     <div className="lg:col-span-4 flex items-center justify-center order-1 lg:order-2 h-[450px] sm:h-[500px] lg:h-[550px] xl:h-[600px] relative overflow-visible">
-                                        <Lanyard
-                                            position={[0, 0, 20]}
-                                            gravity={[0, -40, 0]}
-                                            cardTextureFile={portfolioData.aboutContent?.lanyard_card_file}
-                                            textureFile={portfolioData.aboutContent?.lanyard_texture_file}
-                                        />
+                                        <Safe3D>
+                                            <Lanyard
+                                                position={[0, 0, 20]}
+                                                gravity={[0, -40, 0]}
+                                                cardTextureFile={portfolioData?.aboutContent?.lanyard_card_file}
+                                                textureFile={portfolioData?.aboutContent?.lanyard_texture_file}
+                                            />
+                                        </Safe3D>
                                     </div>
 
                                 </div>
@@ -454,7 +480,7 @@ export default function Home() {
 
                     {/* Skills Grid - DYNAMIC! */}
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
-                        {portfolioData.skills.map((skill, index) => (
+                        {(portfolioData?.skills || []).map((skill, index) => (
                             <FadeIn
                                 key={skill.id}
                                 delay={0.1 + (index * 0.05)}
@@ -485,7 +511,7 @@ export default function Home() {
 
                                     <div className="relative flex items-center gap-2 w-full">
                                         <div className="text-2xl sm:text-3xl transition-all duration-300 group-hover:scale-110 flex-shrink-0">
-                                            {skill.skill_icon.startsWith('http') ? (
+                                            {skill.skill_icon?.startsWith('http') ? (
                                                 <img
                                                     src={skill.skill_icon}
                                                     alt={skill.skill_name}
@@ -553,28 +579,30 @@ export default function Home() {
 
                     {/* ChromaGrid Container - DYNAMIC! */}
                     <div className="w-full" style={{ height: 'auto', position: 'relative' }}>
-                        <ChromaGrid
-                            items={portfolioData.projects
-                                .filter(project => selectedCategory === 'All' || project.category === selectedCategory)
-                                .map(project => ({
-                                    id: project.id,
-                                    image: project.project_image_url,
-                                    title: project.project_title,
-                                    subtitle: project.project_subtitle,
-                                    handle: project.project_handle || '',
-                                    borderColor: project.border_color,
-                                    gradient: project.gradient || 'linear-gradient(135deg, #0f0f0f, #1a1a1a)',
-                                    url: project.project_url || '#'
-                                }))}
-                            onProjectClick={(item) => {
-                                if (item.handle) {
-                                    router.push(`/project/${item.handle}`);
-                                }
-                            }}
-                            radius={250}
-                            damping={0.45}
-                            fadeOut={0.6}
-                        />
+                        <Safe3D>
+                            <ChromaGrid
+                                items={(portfolioData?.projects || [])
+                                    .filter(project => selectedCategory === 'All' || project.category === selectedCategory)
+                                    .map(project => ({
+                                        id: project.id,
+                                        image: project.project_image_url,
+                                        title: project.project_title,
+                                        subtitle: project.project_subtitle,
+                                        handle: project.project_handle || '',
+                                        borderColor: project.border_color,
+                                        gradient: project.gradient || 'linear-gradient(135deg, #0f0f0f, #1a1a1a)',
+                                        url: project.project_url || '#'
+                                    }))}
+                                onProjectClick={(item) => {
+                                    if (item.handle) {
+                                        router.push(`/project/${item.handle}`);
+                                    }
+                                }}
+                                radius={250}
+                                damping={0.45}
+                                fadeOut={0.6}
+                            />
+                        </Safe3D>
                     </div>
                 </div>
             </div >
@@ -834,7 +862,7 @@ export default function Home() {
             <CVDownloadModal
                 isOpen={isCVModalOpen}
                 onClose={() => setIsCVModalOpen(false)}
-                cvUrl={portfolioData.homeContent?.cv_url}
+                cvUrl={portfolioData?.homeContent?.cv_url}
             />
         </div>
     );
