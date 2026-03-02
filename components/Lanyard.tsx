@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import React from 'react';
 import { Canvas, extend, useFrame } from '@react-three/fiber';
-import { useTexture, Environment, Lightformer } from '@react-three/drei';
+import { useTexture, Environment } from '@react-three/drei';
 import { BallCollider, CuboidCollider, Physics, RigidBody, useRopeJoint, useSphericalJoint } from '@react-three/rapier';
 import { MeshLineGeometry, MeshLineMaterial } from 'meshline';
 import * as THREE from 'three';
@@ -25,10 +25,15 @@ export default function Lanyard({
     fov = 25,
     transparent = true,
     textureFile = 'lanyard.png',
-    cardTextureFile = 'id-card.png'
+    cardTextureFile = 'id-card-photo.png'
 }: LanyardProps) {
-    const lanyardTexturePath = `/assets/lanyard/${textureFile}`;
-    const cardTexturePath = `/assets/lanyard/${cardTextureFile}`;
+    
+    // PENDETEKSI CLOUDINARY (Cek apakah link http atau file lokal)
+    const safeTextureFile = textureFile || 'lanyard.png';
+    const safeCardFile = cardTextureFile || 'id-card-photo.png';
+    
+    const lanyardTexturePath = safeTextureFile.startsWith('http') ? safeTextureFile : `/assets/lanyard/${safeTextureFile}`;
+    const cardTexturePath = safeCardFile.startsWith('http') ? safeCardFile : `/assets/lanyard/${safeCardFile}`;
 
     const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
     const [inView, setInView] = useState(false);
@@ -61,10 +66,10 @@ export default function Lanyard({
                 >
                     <ambientLight intensity={2} />
                     <Physics gravity={gravity as [number, number, number]}>
-                        <Band
-                            isMobile={isMobile}
-                            lanyardTexture={lanyardTexturePath}
-                            cardTexturePath={cardTexturePath}
+                        <Band 
+                            isMobile={isMobile} 
+                            lanyardTexture={lanyardTexturePath} 
+                            cardTexturePath={cardTexturePath} 
                         />
                     </Physics>
                     <Environment preset="city" />
@@ -87,9 +92,10 @@ function Band({ isMobile, lanyardTexture, cardTexturePath }: { isMobile: boolean
     const rot = new THREE.Vector3();
     const dir = new THREE.Vector3();
 
+    // Load tekstur (otomatis mendeteksi gambar lokal atau link Cloudinary)
     const texture = useTexture(lanyardTexture);
     const cardTexture = useTexture(cardTexturePath);
-
+    
     const [curve] = useState(() => new THREE.CatmullRomCurve3([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()]));
     const [dragged, drag] = useState<THREE.Vector3 | boolean>(false);
     const [hovered, hover] = useState(false);
@@ -111,7 +117,7 @@ function Band({ isMobile, lanyardTexture, cardTexturePath }: { isMobile: boolean
             [card, j1, j2, j3, fixed].forEach(ref => ref.current?.wakeUp());
             card.current?.setNextKinematicTranslation({ x: vec.x - dragged.x, y: vec.y - dragged.y, z: vec.z - dragged.z });
         }
-
+        
         if (fixed.current) {
             [j1, j2, j3].forEach(ref => {
                 if (!ref.current.lerped) ref.current.lerped = new THREE.Vector3().copy(ref.current.translation());
@@ -147,11 +153,11 @@ function Band({ isMobile, lanyardTexture, cardTexturePath }: { isMobile: boolean
                 <RigidBody position={[0.9, 0, 0]} ref={j3} linearDamping={2} angularDamping={2}>
                     <BallCollider args={[0.1]} />
                 </RigidBody>
-                <RigidBody
-                    position={[1.2, 0, 0]}
-                    ref={card}
+                <RigidBody 
+                    position={[1.2, 0, 0]} 
+                    ref={card} 
                     type={dragged ? 'kinematicPosition' : 'dynamic'}
-                    linearDamping={2}
+                    linearDamping={2} 
                     angularDamping={2}
                 >
                     <CuboidCollider args={[1.5, 2.2, 0.05]} />
@@ -162,7 +168,7 @@ function Band({ isMobile, lanyardTexture, cardTexturePath }: { isMobile: boolean
                         onPointerUp={(e: any) => { e.target.releasePointerCapture(e.pointerId); drag(false); }}
                         onPointerDown={(e: any) => { e.target.setPointerCapture(e.pointerId); drag(new THREE.Vector3().copy(e.point).sub(vec.copy(card.current.translation()))); }}
                     >
-                        {/* Tampak Depan */}
+                        {/* Tampak Depan (Foto Lanyard) */}
                         <mesh>
                             <planeGeometry args={[3, 4.5]} />
                             <meshBasicMaterial map={cardTexture} side={THREE.FrontSide} transparent />
@@ -179,13 +185,13 @@ function Band({ isMobile, lanyardTexture, cardTexturePath }: { isMobile: boolean
                 {/* @ts-ignore */}
                 <meshLineGeometry />
                 {/* @ts-ignore */}
-                <meshLineMaterial
-                    transparent
-                    color="white"
-                    useMap
-                    map={texture}
-                    lineWidth={1}
-                    repeat={[-4, 1]}
+                <meshLineMaterial 
+                    transparent 
+                    color="white" 
+                    useMap 
+                    map={texture} 
+                    lineWidth={1} 
+                    repeat={[-4, 1]} 
                 />
             </mesh>
         </>

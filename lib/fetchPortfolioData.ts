@@ -225,15 +225,20 @@ export async function fetchProjectByHandle(handle: string): Promise<Project | nu
 
 // Fetch All Portfolio Data (untuk SSR/Initial Load)
 export async function fetchAllPortfolioData() {
-  const [homeContent, homeStats, profileCard, aboutContent, skills, projects] =
-    await Promise.all([
-      fetchHomeContent(),
-      fetchHomeStats(),
-      fetchProfileCard(),
-      fetchAboutContent(),
-      fetchSkills(),
-      fetchProjects(),
-    ]);
+  // MENGUBAH PROMISE.ALL MENJADI SEQUENTIAL (BERURUTAN)
+  // Ini mencegah Vercel Serverless "tersedak" karena terlalu banyak koneksi database bersamaan
+
+  const homeContent = await fetchHomeContent();
+  const homeStats = await fetchHomeStats();
+  const profileCard = await fetchProfileCard();
+  const aboutContent = await fetchAboutContent();
+  const skills = await fetchSkills();
+  const projects = await fetchProjects();
+
+  // Log untuk mengecek di Vercel apakah ada data yang bocor/gagal
+  if (!homeContent || !aboutContent) {
+    console.warn("⚠️ Peringatan: Ada data utama yang gagal ditarik dari database!");
+  }
 
   return {
     homeContent,

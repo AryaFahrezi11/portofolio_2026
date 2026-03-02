@@ -12,8 +12,8 @@ import dynamic from 'next/dynamic';
 import FadeIn from '@/components/FadeIn';
 
 // --- TAMENG ANTI-CRASH (ERROR BOUNDARY) ---
-class Safe3D extends React.Component<{children: React.ReactNode, fallback?: React.ReactNode}, {hasError: boolean}> {
-    constructor(props: {children: React.ReactNode, fallback?: React.ReactNode}) {
+class Safe3D extends React.Component<{ children: React.ReactNode, fallback?: React.ReactNode }, { hasError: boolean }> {
+    constructor(props: { children: React.ReactNode, fallback?: React.ReactNode }) {
         super(props);
         this.state = { hasError: false };
     }
@@ -110,7 +110,7 @@ export default function Home() {
     const [isLoading, setIsLoading] = useState(true);
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [isCVModalOpen, setIsCVModalOpen] = useState(false);
-    
+
     // SENSOR HP: Mencegah Lanyard load di HP
     const [isMobileDevice, setIsMobileDevice] = useState(false);
 
@@ -165,7 +165,7 @@ export default function Home() {
         async function fetchData() {
             try {
                 const cacheBusterUrl = `/api/portfolio-data?t=${new Date().getTime()}`;
-                const res = await fetch(cacheBusterUrl, { 
+                const res = await fetch(cacheBusterUrl, {
                     cache: 'no-store',
                     headers: {
                         'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -183,7 +183,7 @@ export default function Home() {
                 setIsLoading(false);
             }
         }
-        
+
         fetchData();
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
@@ -352,17 +352,22 @@ export default function Home() {
                                             ))}
                                         </div>
                                     </div>
-                                    
+
                                     {/* Right Column - 3D Lanyard or Fallback Image */}
                                     <div className="lg:col-span-4 flex items-center justify-center order-1 lg:order-2 h-[350px] sm:h-[500px] lg:h-[550px] xl:h-[600px] relative overflow-visible">
                                         {isMobileDevice ? (
                                             // FALLBACK HP: Render Gambar 2D Statis (Sangat Ringan)
                                             <div className="relative w-[200px] sm:w-[250px] aspect-[2.5/4] rounded-xl overflow-hidden shadow-2xl shadow-cyan-500/20 border border-white/10 group animate-fade-in">
                                                 <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/20 to-purple-600/20 z-10 group-hover:opacity-0 transition-opacity duration-500"></div>
-                                                <img 
-                                                    src={portfolioData?.aboutContent?.lanyard_card_file ? `/assets/lanyard/${portfolioData.aboutContent.lanyard_card_file}` : '/assets/lanyard/id-card.png'}
-                                                    alt="ID Card" 
+                                                <img
+                                                    src={
+                                                        portfolioData?.aboutContent?.lanyard_card_file?.startsWith('http')
+                                                            ? portfolioData.aboutContent.lanyard_card_file
+                                                            : (portfolioData?.aboutContent?.lanyard_card_file ? `/assets/lanyard/${portfolioData.aboutContent.lanyard_card_file}` : '/assets/lanyard/id-card.png')
+                                                    }
+                                                    alt="ID Card"
                                                     className="w-full h-full object-cover"
+                                                    loading="eager"
                                                 />
                                             </div>
                                         ) : (
