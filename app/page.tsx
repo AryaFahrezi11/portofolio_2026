@@ -203,7 +203,7 @@ export default function Home() {
                         <div className="absolute inset-0 rounded-full bg-gradient-to-br from-cyan-500 via-blue-500 to-purple-600 animate-spin" style={{ animationDuration: '3s' }}></div>
                         <div className="absolute inset-1 rounded-full bg-black flex items-center justify-center">
                             <span className="text-4xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
-                                TJ
+                                AF
                             </span>
                         </div>
                     </div>

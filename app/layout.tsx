@@ -1,10 +1,7 @@
-'use client';
-
-import { usePathname } from "next/navigation";
+import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import LightRays from "@/components/LightRays";
-import Navbar from "@/components/Navbar";
+import ClientBackground from "@/components/ClientBackground";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,50 +17,52 @@ const geistMono = Geist_Mono({
   preload: true,
 });
 
+// KODE SEO DIMASUKKAN DI SINI (Karena file ini sekarang Server Component)
+export const metadata: Metadata = {
+  title: 'Arya Fahrezi Amarully | Web & IoT Developer',
+  description: 'Portofolio resmi Arya Fahrezi Amarully - Software Engineer dengan 2+ tahun pengalaman dalam Web Development dan IoT. Spesialisasi JavaScript, React, Next.js, Node.js, dan Arduino.',
+  keywords: [
+    'Arya Fahrezi', 
+    'Amarully',
+    'Portfolio', 
+    'Web Developer', 
+    'IoT Developer', 
+    'Software Engineer', 
+    'Next.js', 
+    'React', 
+    'Tegal',
+    'Indonesia'
+  ],
+  openGraph: {
+    title: 'Arya Fahrezi Amarully - Portfolio',
+    description: 'Jelajahi proyek-proyek inovatif saya, dari pengembangan web, mobile, hingga solusi IoT.',
+    url: 'https://aryafahreziamarully.vercel.app',
+    siteName: 'Arya Fahrezi Portfolio',
+    images: [
+      {
+        // Gambar ini akan muncul saat link webmu di-share di WA/Telegram/LinkedIn
+        url: 'https://aryafahreziamarully.vercel.app/og-image.jpg', 
+        width: 1200,
+        height: 630,
+        alt: 'Preview Portofolio Arya Fahrezi',
+      },
+    ],
+    locale: 'id_ID',
+    type: 'website',
+  },
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const pathname = usePathname();
-  const isAdminRoute = pathname?.startsWith('/admin');
-
   return (
-    <html lang="en">
-      <head>
-        <title>Arya Fahrezi Amarully - Web & IoT Developer Portfolio</title>
-        <meta name="description" content="Portfolio website Arya Fahrezi Amarully - Software Engineer dengan 2+ tahun pengalaman dalam Web Development dan IoT. Spesialisasi JavaScript, React, Next.js, Node.js, dan Arduino." />
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
-        <meta name="theme-color" content="#000000" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-      </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        data-page-loading={!isAdminRoute ? "true" : "false"}
-      >
-        {/* Background Light Rays - Only show on main portfolio page */}
-        {!isAdminRoute && (
-          <div className="fixed inset-0 w-full h-full z-0 pointer-events-none overflow-hidden">
-            <LightRays
-              raysOrigin="top-center"
-              raysColor="#00ffff"
-              raysSpeed={1.5}
-              lightSpread={0.6}
-              rayLength={1.8}
-              fadeDistance={1.2}
-              saturation={1.2}
-              followMouse={true}
-              mouseInfluence={0.15}
-              noiseAmount={0.08}
-              distortion={0.06}
-            />
-          </div>
-        )}
-
-        {/* Navbar - Moved to Home page to control visibility during loading */}
-        {!isAdminRoute && null /* Navbar rendered in page.tsx */}
+    <html lang="id"> {/* Diganti jadi 'id' agar Google mengenali bahasanya */}
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        
+        {/* Background dipanggil dari Client Component yang tadi kita buat */}
+        <ClientBackground />
 
         {/* Content - Responsive container */}
         <div className="relative z-10 w-full">
