@@ -50,6 +50,9 @@ export const metadata: Metadata = {
     locale: 'id_ID',
     type: 'website',
   },
+  verification: {
+    google: '6ZisQBO6NhT2d9m0Iv0Zf7e3IBA2hJUFH9styVyQ4Gg', // Ganti teks ini dengan kode acak dari Google
+  },
 };
 
 export default function RootLayout({
