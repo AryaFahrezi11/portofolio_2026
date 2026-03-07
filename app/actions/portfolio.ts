@@ -26,9 +26,13 @@ export async function loginAdmin(username: string, passwordPlain: string) {
             };
         }
         return { success: false, message: 'Invalid username or password' };
-    } catch (error) {
+    } catch (error: any) {
         console.error('Login error:', error);
-        return { success: false, message: 'An error occurred during login' };
+        // Kita tampilkan pesan error aslinya langsung ke layar!
+        return { 
+            success: false, 
+            message: `CRASH: ${error?.message || String(error)}` 
+        };
     }
 }
 

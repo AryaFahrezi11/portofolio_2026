@@ -61,7 +61,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id"> {/* Diganti jadi 'id' agar Google mengenali bahasanya */}
+    <html lang="id"> 
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         
         {/* Background dipanggil dari Client Component yang tadi kita buat */}
