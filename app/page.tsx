@@ -632,7 +632,7 @@ export default function Home() {
                             <div className="space-y-4 sm:space-y-5">
                                 <h4 className="text-sm sm:text-base font-bold italic tracking-tight bg-gradient-to-r from-white via-white to-white/70 bg-clip-text text-transparent">Quick Links</h4>
                                 <ul className="space-y-2 sm:space-y-2.5">
-                                    {['Home', 'About', 'Skills', 'Projects', 'Certificates', 'Contact'].map((link, index) => (
+                                    {['Hom', 'About', 'Skills', 'Projects', 'Certificates', 'Contact'].map((link, index) => (
                                         <li key={index}><a href={`#${link.toLowerCase()}`} className="group flex items-center gap-2 text-xs sm:text-sm text-white/60 hover:text-white/90 transition-all duration-300 font-serif italic"><span className="w-0 h-[2px] bg-white/20 group-hover:w-4 transition-all duration-300 rounded-full"></span><span className="group-hover:translate-x-1 transition-transform duration-300">{link}</span></a></li>
                                     ))}
                                 </ul>
