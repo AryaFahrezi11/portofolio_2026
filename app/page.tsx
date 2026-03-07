@@ -102,6 +102,14 @@ interface PortfolioData {
         url: string;
         icon: string;
     }[];
+    certificates: {
+        id: string;
+        title: string;
+        issuer: string;
+        date: string | null;
+        image_url: string;
+        credential_url: string | null;
+    }[];
 }
 
 export default function Home() {
@@ -465,6 +473,74 @@ export default function Home() {
                 </div>
             </div >
 
+            {/* Certificate Section */}
+            <div id="certificates" className="w-full pt-11 sm:pt-12 md:pt-11 lg:pt-13 px-4 sm:px-6 md:px-8 lg:px-12 pb-8 lg:pb-12">
+                <div className="container mx-auto max-w-7xl">
+                    <div className="text-center mb-12 sm:mb-16">
+                        <FadeIn delay={0.1} direction="down">
+                            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold italic tracking-tight bg-gradient-to-r from-white via-white to-white/70 bg-clip-text text-transparent">
+                                Licenses & Certifications
+                            </h2>
+                        </FadeIn>
+                    </div>
+
+                    {/* Grid Sertifikat */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                        {(portfolioData?.certificates || []).map((cert, index) => (
+                            <FadeIn key={cert.id} delay={0.1 + (index * 0.1)} direction="up" className="h-full">
+                                <div className="group relative bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:border-cyan-500/50 flex flex-col h-full">
+
+                                    {/* Gambar Sertifikat */}
+                                    <div className="relative w-full aspect-[4/3] overflow-hidden bg-black/50">
+                                        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] to-transparent z-10 opacity-60"></div>
+                                        <img
+                                            src={cert.image_url}
+                                            alt={cert.title}
+                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                        />
+                                    </div>
+
+                                    {/* Info Sertifikat */}
+                                    <div className="relative z-20 p-5 sm:p-6 flex flex-col flex-grow bg-gradient-to-b from-transparent to-[#0a0a0a]">
+                                        <h3 className="text-lg sm:text-xl font-bold text-white mb-1 font-serif italic line-clamp-2">
+                                            {cert.title}
+                                        </h3>
+                                        <p className="text-cyan-400 text-sm font-semibold mb-3">
+                                            {cert.issuer} <span className="text-white/40 font-normal">| {cert.date}</span>
+                                        </p>
+
+                                        <div className="mt-auto pt-4">
+                                            {cert.credential_url ? (
+                                                <a
+                                                    href={cert.credential_url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-2 text-xs sm:text-sm text-white/70 hover:text-cyan-400 transition-colors border border-white/10 hover:border-cyan-500/50 rounded-lg px-4 py-2 bg-white/5"
+                                                >
+                                                    <span>Lihat Kredensial</span>
+                                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                    </svg>
+                                                </a>
+                                            ) : (
+                                                <span className="inline-flex items-center text-xs text-white/30 italic">No public credential</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </FadeIn>
+                        ))}
+                    </div>
+
+                    {/* Pesan kalau kosong */}
+                    {portfolioData?.certificates?.length === 0 && (
+                        <div className="text-center text-white/40 italic font-serif">
+                            Belum ada sertifikat yang ditambahkan.
+                        </div>
+                    )}
+                </div>
+            </div>
+
             {/* Contact Section */}
             < div id="contact" className="w-full min-h-screen pt-11 sm:pt-12 md:pt-11 lg:pt-13 px-4 sm:px-6 md:px-8 lg:px-12 pb-8 lg:pb-12" >
                 <div className="container mx-auto max-w-7xl">
@@ -556,7 +632,7 @@ export default function Home() {
                             <div className="space-y-4 sm:space-y-5">
                                 <h4 className="text-sm sm:text-base font-bold italic tracking-tight bg-gradient-to-r from-white via-white to-white/70 bg-clip-text text-transparent">Quick Links</h4>
                                 <ul className="space-y-2 sm:space-y-2.5">
-                                    {['Home', 'About', 'Skills', 'Projects', 'Contact'].map((link, index) => (
+                                    {['Home', 'About', 'Skills', 'Projects', 'Certificates', 'Contact'].map((link, index) => (
                                         <li key={index}><a href={`#${link.toLowerCase()}`} className="group flex items-center gap-2 text-xs sm:text-sm text-white/60 hover:text-white/90 transition-all duration-300 font-serif italic"><span className="w-0 h-[2px] bg-white/20 group-hover:w-4 transition-all duration-300 rounded-full"></span><span className="group-hover:translate-x-1 transition-transform duration-300">{link}</span></a></li>
                                     ))}
                                 </ul>

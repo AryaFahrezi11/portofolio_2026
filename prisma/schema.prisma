@@ -6,6 +6,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model AdminUser {
@@ -115,4 +116,19 @@ model Project {
   demoType           String?  @default("URL") @map("demo_type")
 
   @@map("projects")
+}
+
+model Certificate {
+  id             String   @id @default(cuid())
+  title          String   // Nama sertifikat (Misal: "Belajar Dasar AWS Cloud")
+  issuer         String   // Penerbit (Misal: "Dicoding", "Coursera", "Poltek Harber")
+  date           String?  // Tanggal terbit (Misal: "Okt 2025")
+  imageUrl       String   // Link foto sertifikat
+  credentialUrl  String?  // Link validasi sertifikat (opsional)
+  displayOrder   Int      @default(0)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("certificates")
 }

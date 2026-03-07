@@ -212,6 +212,19 @@ exports.Prisma.ProjectScalarFieldEnum = {
   demoType: 'demoType'
 };
 
+exports.Prisma.CertificateScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  issuer: 'issuer',
+  date: 'date',
+  imageUrl: 'imageUrl',
+  credentialUrl: 'credentialUrl',
+  displayOrder: 'displayOrder',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -246,7 +259,8 @@ exports.Prisma.ModelName = {
   ProfileCard: 'ProfileCard',
   AboutContent: 'AboutContent',
   Skill: 'Skill',
-  Project: 'Project'
+  Project: 'Project',
+  Certificate: 'Certificate'
 };
 
 /**

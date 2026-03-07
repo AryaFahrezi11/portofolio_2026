@@ -105,3 +105,12 @@ export interface Project {
     created_at: string;
     updated_at: string;
 }
+
+export interface Certificate {
+  id: string;
+  title: string;
+  issuer: string;
+  date: string | null;
+  image_url: string;
+  credential_url: string | null;
+}

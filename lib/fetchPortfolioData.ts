@@ -6,6 +6,7 @@ import type {
   AboutContent,
   Skill,
   Project,
+  Certificate,
 } from '@/types/database';
 
 // Helper to convert Prisma items to local types if necessary
@@ -223,6 +224,28 @@ export async function fetchProjectByHandle(handle: string): Promise<Project | nu
   }
 }
 
+// Fetch Active Certificates
+export async function fetchCertificates(): Promise<Certificate[]> { // <--- Tambahkan Promise<Certificate[]>
+  try {
+    const data = await prisma.certificate.findMany({
+      where: { isActive: true },
+      orderBy: { displayOrder: 'asc' },
+    });
+
+    return data.map(item => ({
+      id: item.id,
+      title: item.title,
+      issuer: item.issuer,
+      date: item.date,
+      image_url: item.imageUrl,
+      credential_url: item.credentialUrl,
+    }));
+  } catch (error) {
+    console.error('Error fetching certificates:', error);
+    return [];
+  }
+}
+
 // Fetch All Portfolio Data (untuk SSR/Initial Load)
 export async function fetchAllPortfolioData() {
   // MENGUBAH PROMISE.ALL MENJADI SEQUENTIAL (BERURUTAN)
@@ -234,6 +257,7 @@ export async function fetchAllPortfolioData() {
   const aboutContent = await fetchAboutContent();
   const skills = await fetchSkills();
   const projects = await fetchProjects();
+  const certificates = await fetchCertificates();
 
   // Log untuk mengecek di Vercel apakah ada data yang bocor/gagal
   if (!homeContent || !aboutContent) {
@@ -247,5 +271,6 @@ export async function fetchAllPortfolioData() {
     aboutContent,
     skills,
     projects,
+    certificates,
   };
 }

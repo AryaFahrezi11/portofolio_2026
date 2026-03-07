@@ -71,7 +71,7 @@ export default function AdminLogin() {
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-cyan-500 via-blue-500 to-purple-600 animate-pulse"></div>
               <div className="absolute inset-0.5 rounded-2xl bg-black flex items-center justify-center">
                 <span className="text-3xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
-                  TJ
+                  AF
                 </span>
               </div>
             </div>
